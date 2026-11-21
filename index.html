@@ -3,362 +3,406 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>The Algo Trading Innovation Challenge</title>
+  <title>The Algo Trading Innovation Challenge — Interactive Audio Presentation</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      background: #0d1117;
+      background: #0b0f17;
       color: #e6edf3;
-      font-family: 'Segoe UI', system-ui, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       min-height: 100vh;
+      overflow-x: hidden;
     }
 
-    header {
-      text-align: center;
-      padding: 2rem 1rem 1rem;
-      background: linear-gradient(135deg, #1a237e 0%, #0d47a1 50%, #1565c0 100%);
-      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-    }
-
-    header h1 {
-      font-size: clamp(1.2rem, 3vw, 2rem);
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      text-shadow: 0 2px 8px rgba(0,0,0,0.4);
-    }
-
-    header p {
-      margin-top: 0.4rem;
-      font-size: 0.9rem;
-      opacity: 0.75;
-    }
-
-    #loading {
-      text-align: center;
-      padding: 4rem 2rem;
-      font-size: 1.1rem;
-      color: #8b949e;
-    }
-
-    #loading .spinner {
-      width: 48px;
-      height: 48px;
-      border: 4px solid #30363d;
-      border-top-color: #58a6ff;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin: 0 auto 1rem;
-    }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    #slides-container {
-      max-width: 960px;
-      margin: 2rem auto;
-      padding: 0 1rem 4rem;
-      display: flex;
-      flex-direction: column;
-      gap: 2.5rem;
-    }
-
-    .slide-wrapper {
-      position: relative;
-      background: #161b22;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-      border: 1px solid #30363d;
-      transition: box-shadow 0.3s ease, border-color 0.3s ease;
-    }
-
-    .slide-wrapper.highlighted {
-      border-color: #58a6ff;
-      box-shadow: 0 0 0 3px rgba(88,166,255,0.3), 0 12px 48px rgba(88,166,255,0.2);
-    }
-
-    .slide-header {
+    /* Fixed top navigation bar */
+    .top-bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(11, 15, 23, 0.94);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 0.75rem 1.5rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0.6rem 1rem;
-      background: #21262d;
-      border-bottom: 1px solid #30363d;
+      gap: 1rem;
     }
 
-    .slide-number {
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: #58a6ff;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-    }
-
-    .canvas-container {
-      position: relative;
-      width: 100%;
-      background: #fff;
-    }
-
-    .slide-canvas {
-      display: block;
-      width: 100%;
-      height: auto;
-    }
-
-    /* ---- Play button overlay ---- */
-    .play-overlay {
-      position: absolute;
-      bottom: 18px;
-      right: 18px;
+    .top-bar-title {
       display: flex;
       flex-direction: column;
-      align-items: flex-end;
-      gap: 5px;
+    }
+
+    .top-bar-title h1 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      color: #ffffff;
+    }
+
+    .top-bar-title span {
+      font-size: 0.75rem;
+      color: #94a3b8;
+    }
+
+    .slide-quicknav {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      overflow-x: auto;
+      padding: 0.2rem;
+    }
+
+    .nav-dot {
+      background: #1e293b;
+      color: #94a3b8;
+      border: 1px solid #334155;
+      font-size: 0.75rem;
+      font-weight: 600;
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .nav-dot:hover, .nav-dot.active {
+      background: #f97316;
+      border-color: #fb923c;
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
+
+    /* Main Container */
+    #slides-container {
+      max-width: 1100px;
+      margin: 1.5rem auto 5rem;
+      padding: 0 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2.2rem;
+    }
+
+    .slide-card {
+      background: #111827;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1.5px solid #1f2937;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+      transition: all 0.25s ease;
+      position: relative;
+    }
+
+    .slide-card:hover {
+      border-color: #374151;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+    }
+
+    .slide-card.focused {
+      border-color: #f97316;
+      box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.3), 0 20px 50px rgba(0, 0, 0, 0.7);
+    }
+
+    /* Slide Header */
+    .slide-card-header {
+      background: #182234;
+      padding: 0.65rem 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #1f2937;
+    }
+
+    .slide-tag {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #f97316;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .slide-status {
+      font-size: 0.72rem;
+      color: #94a3b8;
+      background: #0f172a;
+      padding: 3px 9px;
+      border-radius: 20px;
+      border: 1px solid #1e293b;
+    }
+
+    /* Slide image viewport */
+    .slide-img-box {
+      position: relative;
+      width: 100%;
+      background: #000;
+      line-height: 0;
+    }
+
+    .slide-img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* Play Button Floating Overlay */
+    .slide-play-overlay {
+      position: absolute;
+      bottom: 22px;
+      right: 22px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
       cursor: pointer;
       z-index: 10;
+      background: rgba(4, 7, 12, 0.88);
+      border: 2px solid #f97316;
+      border-radius: 50px;
+      padding: 6px 8px 6px 18px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7), 0 0 0 0 rgba(249, 115, 22, 0.6);
+      transition: all 0.2s ease;
+      animation: pulse-border 2.2s infinite;
+      text-decoration: none;
     }
 
-    .listen-label {
-      background: rgba(0,0,0,0.78);
-      color: #fff;
-      font-size: 0.72rem;
-      font-weight: 600;
-      padding: 4px 10px;
-      border-radius: 20px;
+    @keyframes pulse-border {
+      0%   { box-shadow: 0 8px 24px rgba(0,0,0,0.7), 0 0 0 0 rgba(249,115,22,0.6); }
+      70%  { box-shadow: 0 8px 24px rgba(0,0,0,0.7), 0 0 0 12px rgba(249,115,22,0); }
+      100% { box-shadow: 0 8px 24px rgba(0,0,0,0.7), 0 0 0 0 rgba(249,115,22,0); }
+    }
+
+    .slide-play-overlay:hover {
+      transform: scale(1.05);
+      background: #04070c;
+      border-color: #fb923c;
+    }
+
+    .play-text {
+      color: #ffffff;
+      font-size: 0.88rem;
+      font-weight: 700;
       white-space: nowrap;
-      pointer-events: none;
-      animation: pulse-label 2.2s ease-in-out infinite;
-      letter-spacing: 0.3px;
+      letter-spacing: 0.2px;
+      user-select: none;
     }
 
-    @keyframes pulse-label {
-      0%, 100% { opacity: 1; transform: translateX(0); }
-      50%       { opacity: 0.75; transform: translateX(-3px); }
-    }
-
-    .play-btn {
-      width: 56px;
-      height: 56px;
+    .play-btn-circle {
+      width: 44px;
+      height: 44px;
       border-radius: 50%;
       overflow: hidden;
-      border: 3px solid #fff;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.5), 0 0 0 0 rgba(88,166,255,0.6);
-      transition: transform 0.2s ease;
-      animation: pulse-ring 2s ease-out infinite;
-    }
-
-    @keyframes pulse-ring {
-      0%   { box-shadow: 0 4px 20px rgba(0,0,0,0.5), 0 0 0 0   rgba(88,166,255,0.6); }
-      70%  { box-shadow: 0 4px 20px rgba(0,0,0,0.5), 0 0 0 14px rgba(88,166,255,0); }
-      100% { box-shadow: 0 4px 20px rgba(0,0,0,0.5), 0 0 0 0   rgba(88,166,255,0); }
-    }
-
-    .play-btn:hover { transform: scale(1.12); animation: none; }
-
-    .play-btn img { width: 100%; height: 100%; object-fit: cover; }
-
-    /* ---- Audio player panel ---- */
-    .audio-panel {
-      display: none;
+      flex-shrink: 0;
+      display: flex;
       align-items: center;
-      gap: 0.75rem;
-      padding: 0.75rem 1rem;
-      background: #0d1117;
-      border-top: 1px solid #30363d;
+      justify-content: center;
+      background: #ea580c;
     }
 
-    .audio-panel.visible { display: flex; }
+    .play-btn-circle img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
 
-    .audio-label {
-      font-size: 0.8rem;
-      color: #58a6ff;
-      font-weight: 600;
+    /* Audio Player Bar */
+    .audio-player-bar {
+      background: #0a0f19;
+      border-top: 1px solid #1f2937;
+      padding: 0.85rem 1.4rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      transition: background 0.3s;
+    }
+
+    .slide-card.playing .audio-player-bar {
+      background: #0e1b2e;
+      border-top: 1px solid #2563eb;
+    }
+
+    .audio-badge {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #f97316;
       white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
-    .audio-panel audio {
+    .audio-player-bar audio {
       flex: 1;
-      height: 36px;
-      accent-color: #58a6ff;
+      height: 40px;
+      accent-color: #f97316;
     }
 
-    .close-audio {
-      background: none;
-      border: none;
-      color: #8b949e;
-      cursor: pointer;
-      font-size: 1.1rem;
-      padding: 2px 6px;
-      border-radius: 4px;
-      transition: color 0.2s, background 0.2s;
-      line-height: 1;
-    }
-    .close-audio:hover { color: #e6edf3; background: #21262d; }
-
-    @media (max-width: 600px) {
-      .play-btn { width: 44px; height: 44px; }
-      .listen-label { font-size: 0.65rem; }
+    @media (max-width: 640px) {
+      .top-bar-title h1 { font-size: 0.9rem; }
+      .play-text { font-size: 0.75rem; }
+      .play-btn-circle { width: 36px; height: 36px; }
+      .slide-play-overlay { bottom: 12px; right: 12px; padding: 4px 6px 4px 12px; }
+      .audio-badge { display: none; }
     }
   </style>
 </head>
 <body>
 
-<header>
-  <h1>The Algo Trading Innovation Challenge</h1>
-  <p>Click the play button on any slide to hear the team explain</p>
-</header>
+  <!-- Top Sticky Navigation Bar -->
+  <header class="top-bar">
+    <div class="top-bar-title">
+      <h1>The Algo Trading Innovation Challenge</h1>
+      <span>STRATASCOPE · Techfest × Delta Exchange</span>
+    </div>
+    <div class="slide-quicknav" id="nav-dots">
+      <!-- 10 dots injected by JS -->
+    </div>
+  </header>
 
-<div id="loading">
-  <div class="spinner"></div>
-  <p>Loading presentation slides&hellip;</p>
-</div>
+  <!-- Slide Cards -->
+  <main id="slides-container"></main>
 
-<div id="slides-container"></div>
+  <script>
+    const TOTAL_SLIDES = 10;
+    const container = document.getElementById('slides-container');
+    const navDots = document.getElementById('nav-dots');
+    
+    // Check URL parameters for ?slide=N
+    const urlParams = new URLSearchParams(window.location.search);
+    const targetSlide = parseInt(urlParams.get('slide')) || null;
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script>
-  pdfjsLib.GlobalWorkerOptions.workerSrc =
-    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    let activeAudio = null;
+    let activeCard = null;
 
-  // Read ?slide=N from the URL
-  const params     = new URLSearchParams(window.location.search);
-  const targetSlide = parseInt(params.get('slide')) || null;
+    // Create 10 slide cards
+    for (let i = 1; i <= TOTAL_SLIDES; i++) {
+      // 1. Add top nav dot
+      const dot = document.createElement('a');
+      dot.className = 'nav-dot';
+      dot.href = `#slide-${i}`;
+      dot.textContent = i;
+      dot.title = `Jump to Slide ${i}`;
+      dot.id = `dot-${i}`;
+      dot.addEventListener('click', (e) => {
+        e.preventDefault();
+        playSlide(i);
+      });
+      navDots.appendChild(dot);
 
-  const PDF_URL   = 'The%20Algo%20Trading%20Innovation%20Challenge.pdf';
-  const container = document.getElementById('slides-container');
-  const loadingEl = document.getElementById('loading');
+      // 2. Add slide card
+      const card = document.createElement('div');
+      card.className = 'slide-card';
+      card.id = `slide-${i}`;
 
-  let currentAudio = null;
-  const slideWrappers = [];   // indexed 0-based
+      card.innerHTML = `
+        <div class="slide-card-header">
+          <div class="slide-tag">
+            <span>●</span> Slide ${i} of ${TOTAL_SLIDES}
+          </div>
+          <div class="slide-status" id="status-${i}">Ready to listen</div>
+        </div>
+        <div class="slide-img-box">
+          <img class="slide-img" src="slides_img/slide_${i}.png" alt="Slide ${i}" loading="${i <= 2 ? 'eager' : 'lazy'}">
+          <div class="slide-play-overlay" id="overlay-${i}" title="Click to listen to the team explain slide ${i}">
+            <span class="play-text">Click to listen to the team explain</span>
+            <div class="play-btn-circle">
+              <img src="play button.jpeg" alt="Play">
+            </div>
+          </div>
+        </div>
+        <div class="audio-player-bar">
+          <div class="audio-badge">
+            <span>🎙️</span> Slide ${i} Audio
+          </div>
+          <audio id="audio-${i}" controls preload="metadata" src="${i}.ogg"></audio>
+        </div>
+      `;
 
-  async function loadPDF() {
-    try {
-      const pdf = await pdfjsLib.getDocument(PDF_URL).promise;
-      const totalPages = pdf.numPages;
-      loadingEl.style.display = 'none';
+      container.appendChild(card);
 
-      for (let n = 1; n <= totalPages; n++) {
-        await renderSlide(pdf, n, totalPages);
-      }
+      // Click event for play button on the slide
+      const overlay = card.querySelector(`#overlay-${i}`);
+      overlay.addEventListener('click', () => {
+        playSlide(i);
+      });
 
-      // After all slides are rendered, handle ?slide= targeting
-      if (targetSlide && targetSlide >= 1 && targetSlide <= totalPages) {
-        const idx = targetSlide - 1;
-        const wrapper = slideWrappers[idx];
-        if (wrapper) {
-          wrapper.classList.add('highlighted');
-          wrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // Audio event listeners
+      const audioEl = card.querySelector(`#audio-${i}`);
+      const statusEl = card.querySelector(`#status-${i}`);
 
-          // Auto-open and play the audio for that slide
-          const audioPanel = wrapper.querySelector('.audio-panel');
-          const audioEl    = wrapper.querySelector('audio');
-          if (audioPanel && audioEl) {
-            setTimeout(() => {
-              audioPanel.classList.add('visible');
-              audioEl.play().catch(() => {});
-              currentAudio = audioEl;
-            }, 800); // small delay to let the scroll settle
-          }
+      audioEl.addEventListener('play', () => {
+        // Pause any other audio
+        if (activeAudio && activeAudio !== audioEl) {
+          activeAudio.pause();
         }
-      }
-    } catch (err) {
-      loadingEl.innerHTML = `<p style="color:#f85149">Failed to load PDF: ${err.message}</p>`;
-      console.error(err);
+        if (activeCard && activeCard !== card) {
+          activeCard.classList.remove('playing');
+        }
+        activeAudio = audioEl;
+        activeCard = card;
+        card.classList.add('playing');
+        statusEl.textContent = '🔊 Playing team audio...';
+        statusEl.style.color = '#38bdf8';
+        updateNavDot(i);
+      });
+
+      audioEl.addEventListener('pause', () => {
+        if (activeAudio === audioEl) {
+          card.classList.remove('playing');
+          statusEl.textContent = 'Audio paused';
+          statusEl.style.color = '#94a3b8';
+        }
+      });
+
+      audioEl.addEventListener('ended', () => {
+        card.classList.remove('playing');
+        statusEl.textContent = '✓ Finished';
+        statusEl.style.color = '#4ade80';
+      });
     }
-  }
 
-  async function renderSlide(pdf, pageNum, totalPages) {
-    const page = await pdf.getPage(pageNum);
+    function updateNavDot(num) {
+      document.querySelectorAll('.nav-dot').forEach(d => d.classList.remove('active'));
+      const activeDot = document.getElementById(`dot-${num}`);
+      if (activeDot) activeDot.classList.add('active');
+    }
 
-    const viewportBase = page.getViewport({ scale: 1 });
-    const desiredWidth = Math.min(920, window.innerWidth - 40);
-    const scale  = desiredWidth / viewportBase.width;
-    const viewport = page.getViewport({ scale });
+    function playSlide(num) {
+      const card = document.getElementById(`slide-${num}`);
+      const audio = document.getElementById(`audio-${num}`);
+      if (!card || !audio) return;
 
-    // --- Wrapper ---
-    const wrapper = document.createElement('div');
-    wrapper.className = 'slide-wrapper';
-    wrapper.id = `slide-${pageNum}`;
-    slideWrappers.push(wrapper);
+      document.querySelectorAll('.slide-card').forEach(c => c.classList.remove('focused'));
+      card.classList.add('focused');
 
-    // --- Header bar ---
-    const hdr = document.createElement('div');
-    hdr.className = 'slide-header';
-    hdr.innerHTML = `<span class="slide-number">Slide ${pageNum} / ${totalPages}</span>`;
-    wrapper.appendChild(hdr);
+      // Smooth scroll to slide
+      card.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-    // --- Canvas ---
-    const canvasContainer = document.createElement('div');
-    canvasContainer.className = 'canvas-container';
+      // Play audio
+      setTimeout(() => {
+        audio.play().catch(e => console.log('Audio autoplay prevented, user click required:', e));
+      }, 400);
 
-    const canvas = document.createElement('canvas');
-    canvas.className = 'slide-canvas';
-    canvas.width  = viewport.width;
-    canvas.height = viewport.height;
-    canvasContainer.appendChild(canvas);
+      updateNavDot(num);
+    }
 
-    // --- Play overlay ---
-    const overlay = document.createElement('div');
-    overlay.className = 'play-overlay';
-    overlay.title = 'Click to listen to the team explain';
-    overlay.innerHTML = `
-      <div class="listen-label">&#9664; Click to listen to the team explain</div>
-      <div class="play-btn"><img src="play%20button.jpeg" alt="Play" /></div>
-    `;
-
-    // --- Audio panel ---
-    const audioPanel = document.createElement('div');
-    audioPanel.className = 'audio-panel';
-
-    const audioLabel = document.createElement('span');
-    audioLabel.className = 'audio-label';
-    audioLabel.textContent = `Slide ${pageNum}`;
-
-    const audioEl = document.createElement('audio');
-    audioEl.controls = true;
-    audioEl.src = `${pageNum}.ogg`;
-
-    const closeBtn = document.createElement('button');
-    closeBtn.className = 'close-audio';
-    closeBtn.innerHTML = '&#10005;';
-    closeBtn.title = 'Close';
-    closeBtn.addEventListener('click', () => {
-      audioEl.pause();
-      audioEl.currentTime = 0;
-      audioPanel.classList.remove('visible');
-    });
-
-    audioPanel.appendChild(audioLabel);
-    audioPanel.appendChild(audioEl);
-    audioPanel.appendChild(closeBtn);
-
-    // --- Click handler on play overlay ---
-    overlay.addEventListener('click', () => {
-      // Stop any other playing audio
-      if (currentAudio && currentAudio !== audioEl) {
-        currentAudio.pause();
-        currentAudio.currentTime = 0;
-        document.querySelectorAll('.audio-panel.visible').forEach(p => {
-          if (p !== audioPanel) p.classList.remove('visible');
-        });
-      }
-      audioPanel.classList.add('visible');
-      audioEl.play().catch(() => {});
-      currentAudio = audioEl;
-      wrapper.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    });
-
-    canvasContainer.appendChild(overlay);
-    wrapper.appendChild(canvasContainer);
-    wrapper.appendChild(audioPanel);
-    container.appendChild(wrapper);
-
-    // Render PDF page
-    await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
-  }
-
-  loadPDF();
-</script>
+    // Auto-scroll and auto-play if ?slide=N in URL
+    if (targetSlide && targetSlide >= 1 && targetSlide <= TOTAL_SLIDES) {
+      window.addEventListener('load', () => {
+        setTimeout(() => {
+          playSlide(targetSlide);
+        }, 300);
+      });
+    }
+  </script>
 </body>
 </html>

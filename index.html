@@ -69,12 +69,12 @@
       overflow: hidden;
       box-shadow: 0 8px 32px rgba(0,0,0,0.5);
       border: 1px solid #30363d;
-      transition: box-shadow 0.3s ease;
+      transition: box-shadow 0.3s ease, border-color 0.3s ease;
     }
 
-    .slide-wrapper:hover {
-      box-shadow: 0 12px 48px rgba(88, 166, 255, 0.15);
-      border-color: #58a6ff55;
+    .slide-wrapper.highlighted {
+      border-color: #58a6ff;
+      box-shadow: 0 0 0 3px rgba(88,166,255,0.3), 0 12px 48px rgba(88,166,255,0.2);
     }
 
     .slide-header {
@@ -94,7 +94,6 @@
       text-transform: uppercase;
     }
 
-    /* The canvas container */
     .canvas-container {
       position: relative;
       width: 100%;
@@ -107,21 +106,21 @@
       height: auto;
     }
 
-    /* Play button overlay */
+    /* ---- Play button overlay ---- */
     .play-overlay {
       position: absolute;
-      bottom: 20px;
-      right: 20px;
+      bottom: 18px;
+      right: 18px;
       display: flex;
       flex-direction: column;
       align-items: flex-end;
-      gap: 6px;
+      gap: 5px;
       cursor: pointer;
       z-index: 10;
     }
 
     .listen-label {
-      background: rgba(0,0,0,0.75);
+      background: rgba(0,0,0,0.78);
       color: #fff;
       font-size: 0.72rem;
       font-weight: 600;
@@ -129,40 +128,13 @@
       border-radius: 20px;
       white-space: nowrap;
       pointer-events: none;
-      animation: pulse-label 2s ease-in-out infinite;
+      animation: pulse-label 2.2s ease-in-out infinite;
       letter-spacing: 0.3px;
     }
 
     @keyframes pulse-label {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.75; transform: scale(1.03); }
-    }
-
-    /* Arrow pointing down-right at the button */
-    .arrow-wrapper {
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-    }
-
-    .arrow-line {
-      width: 32px;
-      height: 2px;
-      background: #fff;
-      position: relative;
-      opacity: 0.85;
-    }
-
-    .arrow-line::after {
-      content: '';
-      position: absolute;
-      right: -1px;
-      top: -4px;
-      width: 0;
-      height: 0;
-      border-left: 7px solid #fff;
-      border-top: 5px solid transparent;
-      border-bottom: 5px solid transparent;
+      0%, 100% { opacity: 1; transform: translateX(0); }
+      50%       { opacity: 0.75; transform: translateX(-3px); }
     }
 
     .play-btn {
@@ -172,7 +144,7 @@
       overflow: hidden;
       border: 3px solid #fff;
       box-shadow: 0 4px 20px rgba(0,0,0,0.5), 0 0 0 0 rgba(88,166,255,0.6);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      transition: transform 0.2s ease;
       animation: pulse-ring 2s ease-out infinite;
     }
 
@@ -182,19 +154,11 @@
       100% { box-shadow: 0 4px 20px rgba(0,0,0,0.5), 0 0 0 0   rgba(88,166,255,0); }
     }
 
-    .play-btn:hover {
-      transform: scale(1.12);
-      box-shadow: 0 6px 28px rgba(0,0,0,0.6), 0 0 0 4px rgba(88,166,255,0.5);
-      animation: none;
-    }
+    .play-btn:hover { transform: scale(1.12); animation: none; }
 
-    .play-btn img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
+    .play-btn img { width: 100%; height: 100%; object-fit: cover; }
 
-    /* Audio player panel */
+    /* ---- Audio player panel ---- */
     .audio-panel {
       display: none;
       align-items: center;
@@ -204,8 +168,13 @@
       border-top: 1px solid #30363d;
     }
 
-    .audio-panel.visible {
-      display: flex;
+    .audio-panel.visible { display: flex; }
+
+    .audio-label {
+      font-size: 0.8rem;
+      color: #58a6ff;
+      font-weight: 600;
+      white-space: nowrap;
     }
 
     .audio-panel audio {
@@ -219,19 +188,14 @@
       border: none;
       color: #8b949e;
       cursor: pointer;
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       padding: 2px 6px;
       border-radius: 4px;
       transition: color 0.2s, background 0.2s;
       line-height: 1;
     }
+    .close-audio:hover { color: #e6edf3; background: #21262d; }
 
-    .close-audio:hover {
-      color: #e6edf3;
-      background: #21262d;
-    }
-
-    /* Responsive */
     @media (max-width: 600px) {
       .play-btn { width: 44px; height: 44px; }
       .listen-label { font-size: 0.65rem; }
@@ -241,35 +205,32 @@
 <body>
 
 <header>
-  <h1>🚀 The Algo Trading Innovation Challenge</h1>
+  <h1>The Algo Trading Innovation Challenge</h1>
   <p>Click the play button on any slide to hear the team explain</p>
 </header>
 
 <div id="loading">
   <div class="spinner"></div>
-  <p>Loading presentation slides…</p>
+  <p>Loading presentation slides&hellip;</p>
 </div>
 
 <div id="slides-container"></div>
 
-<!-- PDF.js from CDN -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
   pdfjsLib.GlobalWorkerOptions.workerSrc =
     'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-  // Map slide number → audio file (1.ogg … 10.ogg)
-  const AUDIO_MAP = {};
-  for (let i = 1; i <= 10; i++) {
-    AUDIO_MAP[i] = `${i}.ogg`;
-  }
+  // Read ?slide=N from the URL
+  const params     = new URLSearchParams(window.location.search);
+  const targetSlide = parseInt(params.get('slide')) || null;
 
-  const PDF_URL = 'The%20Algo%20Trading%20Innovation%20Challenge.pdf';
+  const PDF_URL   = 'The%20Algo%20Trading%20Innovation%20Challenge.pdf';
   const container = document.getElementById('slides-container');
   const loadingEl = document.getElementById('loading');
 
-  // Track currently playing audio so we can stop it when another starts
   let currentAudio = null;
+  const slideWrappers = [];   // indexed 0-based
 
   async function loadPDF() {
     try {
@@ -277,11 +238,32 @@
       const totalPages = pdf.numPages;
       loadingEl.style.display = 'none';
 
-      for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
-        await renderSlide(pdf, pageNum, totalPages);
+      for (let n = 1; n <= totalPages; n++) {
+        await renderSlide(pdf, n, totalPages);
+      }
+
+      // After all slides are rendered, handle ?slide= targeting
+      if (targetSlide && targetSlide >= 1 && targetSlide <= totalPages) {
+        const idx = targetSlide - 1;
+        const wrapper = slideWrappers[idx];
+        if (wrapper) {
+          wrapper.classList.add('highlighted');
+          wrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+          // Auto-open and play the audio for that slide
+          const audioPanel = wrapper.querySelector('.audio-panel');
+          const audioEl    = wrapper.querySelector('audio');
+          if (audioPanel && audioEl) {
+            setTimeout(() => {
+              audioPanel.classList.add('visible');
+              audioEl.play().catch(() => {});
+              currentAudio = audioEl;
+            }, 800); // small delay to let the scroll settle
+          }
+        }
       }
     } catch (err) {
-      loadingEl.innerHTML = `<p style="color:#f85149">❌ Failed to load PDF: ${err.message}</p>`;
+      loadingEl.innerHTML = `<p style="color:#f85149">Failed to load PDF: ${err.message}</p>`;
       console.error(err);
     }
   }
@@ -289,57 +271,57 @@
   async function renderSlide(pdf, pageNum, totalPages) {
     const page = await pdf.getPage(pageNum);
 
-    // Scale to fill the container (~920px wide)
     const viewportBase = page.getViewport({ scale: 1 });
     const desiredWidth = Math.min(920, window.innerWidth - 40);
-    const scale = desiredWidth / viewportBase.width;
+    const scale  = desiredWidth / viewportBase.width;
     const viewport = page.getViewport({ scale });
 
-    // Build DOM
+    // --- Wrapper ---
     const wrapper = document.createElement('div');
     wrapper.className = 'slide-wrapper';
+    wrapper.id = `slide-${pageNum}`;
+    slideWrappers.push(wrapper);
 
-    // Header bar
+    // --- Header bar ---
     const hdr = document.createElement('div');
     hdr.className = 'slide-header';
     hdr.innerHTML = `<span class="slide-number">Slide ${pageNum} / ${totalPages}</span>`;
     wrapper.appendChild(hdr);
 
-    // Canvas container
+    // --- Canvas ---
     const canvasContainer = document.createElement('div');
     canvasContainer.className = 'canvas-container';
 
     const canvas = document.createElement('canvas');
     canvas.className = 'slide-canvas';
-    canvas.width = viewport.width;
+    canvas.width  = viewport.width;
     canvas.height = viewport.height;
     canvasContainer.appendChild(canvas);
 
-    // Play overlay
+    // --- Play overlay ---
     const overlay = document.createElement('div');
     overlay.className = 'play-overlay';
     overlay.title = 'Click to listen to the team explain';
-
     overlay.innerHTML = `
-      <div class="listen-label">🎙 Click to listen to the team explain</div>
-      <div class="arrow-wrapper"><div class="arrow-line"></div></div>
-      <div class="play-btn">
-        <img src="play%20button.jpeg" alt="Play" />
-      </div>
+      <div class="listen-label">&#9664; Click to listen to the team explain</div>
+      <div class="play-btn"><img src="play%20button.jpeg" alt="Play" /></div>
     `;
 
-    // Audio panel (hidden by default)
+    // --- Audio panel ---
     const audioPanel = document.createElement('div');
     audioPanel.className = 'audio-panel';
 
-    const audioFile = AUDIO_MAP[pageNum];
+    const audioLabel = document.createElement('span');
+    audioLabel.className = 'audio-label';
+    audioLabel.textContent = `Slide ${pageNum}`;
+
     const audioEl = document.createElement('audio');
     audioEl.controls = true;
-    audioEl.src = audioFile || '';
+    audioEl.src = `${pageNum}.ogg`;
 
     const closeBtn = document.createElement('button');
     closeBtn.className = 'close-audio';
-    closeBtn.innerHTML = '✕';
+    closeBtn.innerHTML = '&#10005;';
     closeBtn.title = 'Close';
     closeBtn.addEventListener('click', () => {
       audioEl.pause();
@@ -347,26 +329,23 @@
       audioPanel.classList.remove('visible');
     });
 
+    audioPanel.appendChild(audioLabel);
     audioPanel.appendChild(audioEl);
     audioPanel.appendChild(closeBtn);
 
-    // Click handler: show audio panel + auto-play
+    // --- Click handler on play overlay ---
     overlay.addEventListener('click', () => {
-      // Stop any currently playing audio
+      // Stop any other playing audio
       if (currentAudio && currentAudio !== audioEl) {
         currentAudio.pause();
         currentAudio.currentTime = 0;
-        // Hide the other panel
         document.querySelectorAll('.audio-panel.visible').forEach(p => {
           if (p !== audioPanel) p.classList.remove('visible');
         });
       }
-
       audioPanel.classList.add('visible');
       audioEl.play().catch(() => {});
       currentAudio = audioEl;
-
-      // Smooth scroll so the slide is visible
       wrapper.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     });
 
@@ -375,11 +354,8 @@
     wrapper.appendChild(audioPanel);
     container.appendChild(wrapper);
 
-    // Render PDF page onto canvas
-    await page.render({
-      canvasContext: canvas.getContext('2d'),
-      viewport
-    }).promise;
+    // Render PDF page
+    await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
   }
 
   loadPDF();
